@@ -114,17 +114,16 @@ int main(void)
 	  // When RPi detects 'A' then start reading, ensures data synchronisation
 	  HAL_UART_Transmit(&huart2, (uint8_t *)&start_msg, 1, 0xFF);
 
-	  if((HAL_UART_Transmit(&huart2, (uint16_t *)&msg_arr[0], 1, 0xFF) == HAL_OK)){
+	  if((HAL_UART_Transmit(&huart2, (uint8_t *)&msg_arr[0], 2, 0xFF) == HAL_OK)){
 		  // Blink LED if successful
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-		  HAL_Delay(100);
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
 	  } //end of uart transmission
 
 
 	   //end of ADC polling
-	  HAL_Delay(50);
+	  HAL_Delay(0.1);
 	  HAL_ADC_Stop(&hadc1);
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -238,7 +237,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 230400;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
