@@ -94,6 +94,7 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   uint16_t msg_arr[2] = {0};
+  uint8_t start_msg = 'A';
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,18 +111,19 @@ int main(void)
 		  msg_arr[i] = ((uint16_t*)&adcvalue)[i];
 	  }
 
+	  // When RPi detects 'A' then start reading, ensures data synchronisation
+	  HAL_UART_Transmit(&huart2, (uint8_t *)&start_msg, 1, 0xFF);
 
 	  if((HAL_UART_Transmit(&huart2, (uint16_t *)&msg_arr[0], 1, 0xFF) == HAL_OK)){
 		  // Blink LED if successful
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
 		  HAL_Delay(100);
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
-		  HAL_Delay(100);
 	  } //end of uart transmission
 
 
 	   //end of ADC polling
-	  HAL_Delay(500);
+	  HAL_Delay(50);
 	  HAL_ADC_Stop(&hadc1);
     /* USER CODE END WHILE */
 
