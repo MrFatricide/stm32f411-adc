@@ -93,44 +93,40 @@ int main(void)
   MX_USART2_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t msg_arr[4] = {0};
+  uint16_t msg_arr[2] = {0};
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+
+
 	  HAL_ADC_Start(&hadc1);
-	  if(HAL_ADC_PollForConversion(&hadc1, 5) == HAL_OK){
-		  adcvalue = HAL_ADC_GetValue(&hadc1);
+	  adcvalue = HAL_ADC_GetValue(&hadc1);
 
-		  // Saving 32bit ADC values into an array of 4 8bit int
-		  for(int i = 0; i<4; ++i){
-			  msg_arr[i] = ((uint8_t*)&adcvalue)[3-i];
-		  }
+	  // Saving 32bit ADC values into an array of 4 8bit int
+	  for(int i = 0; i<2;i++){
+		  msg_arr[i] = ((uint16_t*)&adcvalue)[i];
+	  }
 
-		  for(int i=0; i<4;++i){
-			  if((HAL_UART_Transmit(&huart2, (uint8_t *)&msg_arr[i], 2, 0xFF) == HAL_OK)){
-				  // Blink LED if successful
-				  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-				  HAL_Delay(100);
-				  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
-				  HAL_Delay(100);
-			  } //end of uart transmission
-		  }
 
-	  } //end of ADC polling
-	  HAL_ADC_Stop(&hadc1);
+	  if((HAL_UART_Transmit(&huart2, (uint16_t *)&msg_arr[0], 1, 0xFF) == HAL_OK)){
+		  // Blink LED if successful
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
+		  HAL_Delay(100);
+		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
+		  HAL_Delay(100);
+	  } //end of uart transmission
+
+
+	   //end of ADC polling
 	  HAL_Delay(500);
+	  HAL_ADC_Stop(&hadc1);
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
-//	  if((HAL_UART_Transmit(&huart2, (uint8_t *)&msg, 2, 0xFF) == HAL_OK)){
-//		  // Blink LED if successful
-//		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-//		  HAL_Delay(50);
-//		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
-//	  } //end of uart transmission
-//	  HAL_Delay(100);
+
   }
   /* USER CODE END 3 */
 }
@@ -197,7 +193,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
