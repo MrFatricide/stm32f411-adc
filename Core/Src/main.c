@@ -87,16 +87,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
-  //1. Bring Slave Select LOW
-  HAL_GPIO_WritePin(GPIOE, GPIO_Pin_4, GPIO_PIN_RESET);
 
-  //2. Transmit register + data
-  spiTxBuffer[0] = 0x20;
-  spiRxBuffer[1] = 0x11;
-  HAL_SPI_Transmit(&hspi1, spiTxBuff, 2, 50);
-
-  //3. Bring slave to select high
-  HAL_GPIO_WritePin(GPIOE, GPIO_Pin_4, GPIO_PIN_SET);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -122,7 +113,14 @@ int main(void)
 		  msg_arr[i] = ((uint16_t*)&adcvalue)[i];
 	  }
 
+	  //1. Bring Slave Select LOW
+	  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
 
+	  //2. Transmit register + data
+	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr[0], 2, 0xFF);
+
+	  //3. Bring slave to select high
+	  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_SET);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
