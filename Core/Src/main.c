@@ -97,6 +97,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   uint16_t msg_arr[2] = {0};
   uint16_t msg_test = 'A';
+  uint8_t msg_test2 = 'A';
 
   /* Turn off the LED */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
@@ -143,24 +144,26 @@ int main(void)
 		  msg_arr[i] = ((uint16_t*)&adcvalue)[i];
 	  }
 
-
-	  //SPI 1. Bring Slave Select LOW
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-
-	  //SPI 2. Transmit Register + 0x80 ( Set MSB to HIGH for read mode)
-	  spiTxBuf[0] = 0x29|0x80;
-	  HAL_SPI_Receive(&hspi1, (uint8_t *)&msg_test, 2, 0xFFFF);
-	  if ((msg_test|0x7E) == 0xFF){
-		  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_test, 2, 0xFF);
-
+	  HAL_SPI_Receive(&hspi1, (uint8_t *)&msg_test, 1, 0xFF);
+	  if(msg_test != 0){
 		  /* Turn on the LED */
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-
+		  /* Transmit Data 'A' for testing of SPI*/
+		  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_test2, 1, 0xFF);
 	  }
-	  //SPI 3. Bring Slave Select high
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 
 
+
+
+
+	  /* USER CODE BEGIN 3 */
+	  HAL_Delay(1/10);
+	  HAL_ADC_Stop(&hadc1);
+
+	  /* Turn off the LED */
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
+	  /* USER CODE END 3 */
+  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -169,7 +172,6 @@ int main(void)
 
 	  /* Turn off the LED */
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
-  }
   /* USER CODE END 3 */
 }
 
@@ -284,7 +286,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
@@ -316,22 +318,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
