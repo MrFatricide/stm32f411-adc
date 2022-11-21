@@ -9,4 +9,4 @@
 - Truncate 32 bit into 8 bits and save only smallest 16 bits
 
 ### SPI
-- Pin used : `A4` => **Chip Select/NSS1**, `A5` => **Clk/SCLK1**, `A6' => **MISO**, `A7` => **MOSI**
+- Pin used : `A4` => **Chip Select/NSS1**, `A5` => **Clk/SCLK1**, `A6` => **MISO**, `A7` => **MOSI**
