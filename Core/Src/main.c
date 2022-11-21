@@ -60,7 +60,6 @@ static void MX_SPI1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint32_t adcvalue;
-uint8_t spiTxBuf[2], spiRxBuf[2];
 /* USER CODE END 0 */
 
 /**
@@ -96,37 +95,9 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   uint8_t msg_arr[2] = {0};
-  uint16_t msg_test;
-  uint8_t msg_test2[2] = {'A', 'B'};
 
   /* Turn off the LED */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
-
-
-//  ////////////////////// Master Behaviour //////////////////////
-//  /******************** SPI Transmit *************************/
-//  //SPI 1. Bring Slave Select LOW
-//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-//
-//  //SPI 2. Transmit Register + data
-//  spiTxBuf[0] = 0x20;
-//  spiTxBuf[1] = 0x11;
-//  HAL_SPI_Transmit(&hspi1, spiTxBuf, 2, 0xFF);
-//
-//  //SPI 3. Bring Slave Select high
-//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-//
-//  /******************* SPI Receive ***************************/
-//  //SPI 1. Bring Slave Select LOW
-//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-//
-//  //SPI 2. Transmit Register + 0x80 ( Set MSB to HIGH for read mode)
-//  spiTxBuf[0] = 0x29|0x80;
-//  HAL_SPI_Receive(&hspi1, spiRxBuf, 1, 0xFFFF);
-//  HAL_SPI_Transmit(&hspi1, spiTxBuf, 1, 0xFF);
-//
-//  //SPI 3. Bring Slave Select high
-//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 
@@ -139,23 +110,12 @@ int main(void)
 	  HAL_ADC_Start(&hadc1);
 	  adcvalue = HAL_ADC_GetValue(&hadc1);
 
-	  // Saving 32bit ADC values into an array of 4 8bit int
+	  // Saving last 2 byte of 32bit ADC values into an array of 2 8bit int
 	  for(int i = 0; i<2;i++){
 		  msg_arr[i] = ((uint8_t*)&adcvalue)[i];
 	  }
 
 	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr, 1, 0xFF);
-//	  HAL_SPI_Receive(&hspi1, (uint8_t *)&msg_test, 2, 50);
-//	  if(msg_test != 0){
-//		  /* Turn on the LED */
-//		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-//		  /* Transmit Data 'A' for testing of SPI*/
-//		  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_test2, 2, 0xFF);
-//	  }
-
-
-
-
 
 	  /* USER CODE BEGIN 3 */
 	  //HAL_Delay(1/10);
