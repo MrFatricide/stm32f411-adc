@@ -95,9 +95,9 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  uint16_t msg_arr[2] = {0};
-  uint16_t msg_test = 'A';
-  uint8_t msg_test2 = 'A';
+  uint8_t msg_arr[2] = {0};
+  uint16_t msg_test;
+  uint8_t msg_test2[2] = {'A', 'B'};
 
   /* Turn off the LED */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
@@ -141,23 +141,24 @@ int main(void)
 
 	  // Saving 32bit ADC values into an array of 4 8bit int
 	  for(int i = 0; i<2;i++){
-		  msg_arr[i] = ((uint16_t*)&adcvalue)[i];
+		  msg_arr[i] = ((uint8_t*)&adcvalue)[i];
 	  }
 
-	  HAL_SPI_Receive(&hspi1, (uint8_t *)&msg_test, 1, 0xFF);
-	  if(msg_test != 0){
-		  /* Turn on the LED */
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-		  /* Transmit Data 'A' for testing of SPI*/
-		  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_test2, 1, 0xFF);
-	  }
+	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr, 1, 0xFF);
+//	  HAL_SPI_Receive(&hspi1, (uint8_t *)&msg_test, 2, 50);
+//	  if(msg_test != 0){
+//		  /* Turn on the LED */
+//		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
+//		  /* Transmit Data 'A' for testing of SPI*/
+//		  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_test2, 2, 0xFF);
+//	  }
 
 
 
 
 
 	  /* USER CODE BEGIN 3 */
-	  HAL_Delay(1/10);
+	  //HAL_Delay(1/10);
 	  HAL_ADC_Stop(&hadc1);
 
 	  /* Turn off the LED */
@@ -167,7 +168,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(0.01);
+	  HAL_Delay(1/10);
 	  HAL_ADC_Stop(&hadc1);
 
 	  /* Turn off the LED */
@@ -286,7 +287,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_HARD_OUTPUT;
+  hspi1.Init.NSS = SPI_NSS_HARD_INPUT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
