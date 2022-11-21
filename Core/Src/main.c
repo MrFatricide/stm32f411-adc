@@ -95,10 +95,39 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  uint16_t msg_arr[2] = {0};
+  uint8_t msg_arr[2] = {0};
+  uint16_t msg_test;
+  uint8_t msg_test2[2] = {'A', 'B'};
 
-  //SPI 1. Bring Slave Select LOW
-  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
+  /* Turn off the LED */
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
+
+
+//  ////////////////////// Master Behaviour //////////////////////
+//  /******************** SPI Transmit *************************/
+//  //SPI 1. Bring Slave Select LOW
+//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+//
+//  //SPI 2. Transmit Register + data
+//  spiTxBuf[0] = 0x20;
+//  spiTxBuf[1] = 0x11;
+//  HAL_SPI_Transmit(&hspi1, spiTxBuf, 2, 0xFF);
+//
+//  //SPI 3. Bring Slave Select high
+//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+//
+//  /******************* SPI Receive ***************************/
+//  //SPI 1. Bring Slave Select LOW
+//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+//
+//  //SPI 2. Transmit Register + 0x80 ( Set MSB to HIGH for read mode)
+//  spiTxBuf[0] = 0x29|0x80;
+//  HAL_SPI_Receive(&hspi1, spiRxBuf, 1, 0xFFFF);
+//  HAL_SPI_Transmit(&hspi1, spiTxBuf, 1, 0xFF);
+//
+//  //SPI 3. Bring Slave Select high
+//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -112,23 +141,38 @@ int main(void)
 
 	  // Saving 32bit ADC values into an array of 4 8bit int
 	  for(int i = 0; i<2;i++){
-		  msg_arr[i] = ((uint16_t*)&adcvalue)[i];
+		  msg_arr[i] = ((uint8_t*)&adcvalue)[i];
 	  }
 
+	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr, 1, 0xFF);
+//	  HAL_SPI_Receive(&hspi1, (uint8_t *)&msg_test, 2, 50);
+//	  if(msg_test != 0){
+//		  /* Turn on the LED */
+//		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
+//		  /* Transmit Data 'A' for testing of SPI*/
+//		  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_test2, 2, 0xFF);
+//	  }
 
 
-	  //SPI 2. Transmit register + data
-	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr[0], 2, 0xFF);
 
 
 
+	  /* USER CODE BEGIN 3 */
+	  //HAL_Delay(1/10);
+	  HAL_ADC_Stop(&hadc1);
 
+	  /* Turn off the LED */
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
+	  /* USER CODE END 3 */
+  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_Delay(0.01);
+	  HAL_Delay(1/10);
 	  HAL_ADC_Stop(&hadc1);
-  }
+
+	  /* Turn off the LED */
+	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
   /* USER CODE END 3 */
 }
 
@@ -240,11 +284,11 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_16BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi1.Init.NSS = SPI_NSS_HARD_INPUT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -275,9 +319,6 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : PC13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -285,16 +326,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 }
 
 /* USER CODE BEGIN 4 */
+
 
 /* USER CODE END 4 */
 
