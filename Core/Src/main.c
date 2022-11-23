@@ -19,6 +19,12 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+/*Max Length of an Buffer array
+ * 16bit msg = 12 bit ADC + 4bit error/index
+ * 4 bit => 3 bit for error/index , 1 bit parity ?
+ * 3 bit => 7 samples in buffer
+ * Each Sample has 2 8bit int so 7*2 = 14*/
+#define MAX 14
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,6 +59,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_SPI1_Init(void);
+void enqueue3(uint8_t *, uint8_t *, uint8_t );
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -60,6 +67,11 @@ static void MX_SPI1_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 uint32_t adcvalue;
+uint8_t msg_arr[2] = {0};
+uint8_t counter = 0;
+uint8_t error_buf[MAX] = {0};
+uint8_t buf_size = 0;
+uint8_t RxMsg = 0;
 /* USER CODE END 0 */
 
 /**
@@ -94,7 +106,6 @@ int main(void)
   MX_ADC1_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t msg_arr[2] = {0};
 
   /* Turn off the LED */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
@@ -106,16 +117,30 @@ int main(void)
   while (1)
   {
 
-
 	  HAL_ADC_Start(&hadc1);
 	  adcvalue = HAL_ADC_GetValue(&hadc1);
 
 	  // Saving last 2 byte of 32bit ADC values into an array of 2 8bit int
 	  for(int i = 0; i<2;i++){
 		  msg_arr[i] = ((uint8_t*)&adcvalue)[i];
+
+		  // Adding Value to Error Buffer
+		  // Appends byte0 1st, error_buf = {byte_0,byte_1, byte_2, byte_3}
+		  enqueue3(&error_buf[0], &buf_size, msg_arr[i]);
 	  }
 
+	  // bit [4:2] would be the counter
+	  // 8'b00xx_xxyy - x: Counter , y: MSB of 12 bit data
+	  msg_arr[1] += (counter << 3);
+
 	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr, 1, 0xFF);
+
+	  // For Error Flow, if RxMsg != counter
+	  // Means missed messages
+	  if(counter > 6)
+		  counter = 0;
+	  else
+		  counter++;
 
 	  /* USER CODE BEGIN 3 */
 	  //HAL_Delay(1/10);
@@ -289,7 +314,27 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+ * @brief Similar to list.append in python except there is max size
+ * @param	arr_ptr : &queue[0] (int queue[n] = {})
+ *        	size	: &size ( int size = 0 )
+ *        	value	: int
+ */
 
+void enqueue3(uint8_t *arr_ptr, uint8_t *size, uint8_t value ){
+    arr_ptr += *size;
+    for (int i = *size; i>= 0 ; --i){
+        *arr_ptr = *(arr_ptr - 1);
+        arr_ptr--;
+
+    }
+
+    arr_ptr++;
+
+    *arr_ptr = value;
+    if(*size<MAX-1)
+        (*size)++;
+}
 
 /* USER CODE END 4 */
 
