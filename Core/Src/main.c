@@ -71,7 +71,7 @@ uint8_t msg_arr[2] = {0};
 uint8_t counter = 0;
 uint8_t error_buf[MAX] = {0};
 uint8_t buf_size = 0;
-uint8_t RxMsg = 0;
+uint8_t RxMsg[1] = {0};
 /* USER CODE END 0 */
 
 /**
@@ -133,11 +133,23 @@ int main(void)
 	  // 8'b00xx_xxyy - x: Counter , y: MSB of 12 bit data
 	  msg_arr[1] += (counter << 3);
 
+	  HAL_SPI_Receive(&hspi1, (uint8_t *)&RxMsg, 1, 0xFF);
+
+	  // If Received Data != Current Counter index - 1 (because already counter++)
+	  // Transmit data from Buffer where buffer index = Current counter - received msg
+	  if(RxMsg[1] != counter-1){
+		  int8_t error_buf_index = counter-1 - RxMsg;
+		  if(error_buf_index < 0)
+			  error_buf_index += (MAX/2 - 1);
+		  uint8_t temparr[2] = {error_buf[error_buf_index], error_buf[error_buf_index +1]};
+		  HAL_SPI_Transmit(&hspi1, (uint8_t *)&temparr, 1, 0xFF);
+	  }
+
 	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr, 1, 0xFF);
 
 	  // For Error Flow, if RxMsg != counter
 	  // Means missed messages
-	  if(counter > 6)
+	  if(counter > (MAX/2 - 1))
 		  counter = 0;
 	  else
 		  counter++;
