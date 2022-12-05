@@ -10,3 +10,4 @@
 
 ### SPI
 - Pin used : `A4` => **Chip Select/NSS1**, `A5` => **Clk/SCLK1**, `A6` => **MISO**, `A7` => **MOSI**
+- Sends 1 Null bit, 3 Counter Bits, 12 ADC Value bits
