@@ -15,15 +15,15 @@
 ### Error Correction
 ```c
 // 8'b0xxx_yyyy - x: Counter , y: MSB of 12 bit data
-	  msg_arr[1] += (counter << 4);
+msg_arr[1] += (counter << 4);
 
-	  HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr, 1, 0xFF);
+HAL_SPI_Transmit(&hspi1, (uint8_t *)&msg_arr, 1, 0xFF);
 
-	  // Reset Counter
-	  if(counter > 6)
-		  counter = 0;
-	  else
-		  counter++;
+// Reset Counter
+if(counter > 6)
+  counter = 0;
+else
+  counter++;
  ```
  
  - SPI only transfer 8 bit at a time hence, 1st 8 bit transfer would be smallest 8-bit of the ADC value
